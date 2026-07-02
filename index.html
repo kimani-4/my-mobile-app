@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Application Portal</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
+        .container { max-width: 100%; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-weight: 600; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; /* Prevents iOS auto-zoom */ }
+        button { width: 100%; margin-top: 20px; padding: 12px; background: #007BFF; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 15px; padding: 12px; background: #e9ecef; border-left: 5px solid #28a745; border-radius: 4px; display: none; font-size: 15px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <!-- SECTION 1: SUBMIT TO DATABASE -->
+    <div class="container">
+        <h2>Application Form</h2>
+        <form id="appForm">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" required placeholder="John Doe">
+
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" required placeholder="john@example.com">
+
+            <label for="Role">Preferred Role:</label>
+            <select id="Role">
+                <option value="Developer">Developer</option>
+                <option value="Designer">Designer</option>
+                <option value="Data Analyst">Data Analyst</option>
+            </select>
+
+            <button type="submit">Submit Application</button>
+        </form>
+        <div id="submitResult" class="result"></div>
+    </div>
+
+    <!-- SECTION 2: RECEIVE FROM DATABASE -->
+    <div class="container">
+        <h2>Retrieve Application</h2>
+        <label for="searchId">Enter Application ID:</label>
+        <input type="number" id="searchId" placeholder="e.g., 1">
+        <button onclick="retrieveData()">Fetch Data</button>
+        
+        <div id="retrieveResult" class="result" style="border-left-color: #007BFF;"></div>
+    </div>
+
+    <script>
+        // Simulated Database Setup using LocalStorage
+        function getDatabase() {
+            return JSON.parse(localStorage.getItem('mockDatabase')) || [];
+        }
+
+        function saveDatabase(db) {
+            localStorage.setItem('mockDatabase', JSON.stringify(db));
+        }
+
+        // Handle Data Submission (POST equivalent)
+        document.getElementById('appForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const Role = document.getElementById('Role').value;
+
+            const db = getDatabase();
+            
+            // Create a new record with a unique ID
+            const newUser = {
+                id: db.length + 1,
+                name: name,
+                email: email,
+                Role: Role,
+                submittedAt: new Date().toLocaleDateString()
+            };
+
+            db.push(newUser);
+            saveDatabase(db);
+
+            // Output response
+            const resultDiv = document.getElementById('submitResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<strong>Success!</strong> Saved to Database.<br>Your Application ID is: <strong>${newUser.id}</strong>`;
+            
+            document.getElementById('appForm').reset();
+        });
+
+        // Handle Specific Data Retrieval (GET equivalent)
+        function retrieveData() {
+            const searchId = parseInt(document.getElementById('searchId').value);
+            const resultDiv = document.getElementById('retrieveResult');
+            
+            if (!searchId) {
+                alert("Please enter a valid ID");
+                return;
+            }
+
+            const db = getDatabase();
+            // Search database for specific ID
+            const user = db.find(u => u.id === searchId);
+
+            resultDiv.style.display = 'block';
+            if (user) {
+                resultDiv.innerHTML = `
+                    <strong>Record Found from DB:</strong><br>
+                    <strong>ID:</strong> ${user.id}<br>
+                    <strong>Name:</strong> ${user.name}<br>
+                    <strong>Email:</strong> ${user.email}<br>
+                    <strong>Role:</strong> ${user.Role}<br>
+                    <strong>Applied On:</strong> ${user.submittedAt}
+                `;
+            } else {
+                resultDiv.innerHTML = `<strong style="color:red;">Error:</strong> ID #${searchId} not found in database.`;
+            }
+        }
+    </script>
+</body>
+</html>
+create application form
